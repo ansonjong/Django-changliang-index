@@ -1,0 +1,121 @@
+{% extends "index.html" %}
+
+{% block title %}Success{% endblock %}
+
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if index_etl_obj %}Edit{% else %}Add{% endif %} Information</title>
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+
+</head>
+    <style>
+        body {
+            background-color: #282C34;
+            color: #ABB2BF;
+            font-family: Arial, sans-serif;
+            padding-top: 0px; /* 顶部间距 */
+        }
+         .col-form-label {
+            color: #cccccc; /* 设置标题的字体颜色为白色 */
+            font-size: 18px; /* 设置字体大小为16像素 */
+            font-family: Helvetica, sans-serif; /* 设置字体样式为Arial或系统默认 sans-serif */
+}
+        {#.container {#}
+        {#    background-color: #1E2127;#}
+        {#    border-radius: 5px;#}
+        {#    padding: 20px;#}
+        {#    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */#}
+        {#}#}
+
+        .form-group label {
+            color: #cccccc; /* 输入框标签颜色 */
+        }
+            .custom-input {
+                width: 200px; /* 设置输入框宽度 */
+                height: 40px;
+                margin-top: 10px; /* 适当的上边距 */
+                padding: 10px; /* 添加内边距 */
+                border: 1px solid #ccc; /* 添加边框 */
+                border-radius: 5px; /* 圆角边框 */
+                resize: none; /* 禁止调整大小 */
+                overflow: auto; /* 添加滚动条 */
+            }
+
+          #sql_info {
+                display: block;
+                width: calc(100% / 1.5); /* 占据整体的三分之一宽度 */
+                height: 700px; /* 控制输入框的高度 */
+                margin-top: 10px; /* 适当的上边距 */
+                padding: 10px; /* 添加内边距 */
+                border: 1px solid #ccc; /* 添加边框 */
+                border-radius: 5px; /* 圆角边框 */
+                resize: none; /* 禁止调整大小 */
+                overflow: auto; /* 添加滚动条 */
+            }
+
+            /* 隐藏原生的输入框边框 */
+            #sql_info:focus {
+                border-color: #ccc;
+                box-shadow: none;
+            }
+
+        .form-control {
+            background-color: #2C313C;
+            border: 1px solid #3E4451;
+            color: #D0D0D0; /* 输入框文字颜色 */
+            font-family: monospace; /* 使用等宽字体以保持行号对齐 */
+            padding: 10px; /* 添加一些内边距 */
+            border-radius: 5px; /* 圆角边框 */
+            resize: none; /* 禁止调整大小 */
+        }
+
+        .form-control:focus {
+            background-color: #2C313C;
+            border: 1px solid #61AFEF; /* 输入框获得焦点时的边框颜色 */
+            color: #D0D0D0;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top">
+    </nav>
+    <div class="container-fluid mt-5">
+        <h1 class="mb-4">Add Information</h1>
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group row" style="display: flex; align-items: center; justify-content: flex-start; color: #ffffff;">
+                <label for="index_no" class="col-form-label" style="width: 80px; text-align: left; margin-right: 10px;">指标id:</label>
+                <input type="text" class="form-control custom-input" id="index_no" name="index_no" value="{% if index_etl_obj %}{{ index_etl_obj.index_no }}{% endif %}" style="margin-right: 30px;">
+
+                <label for="index_name" class="col-form-label" style="width: 110px; text-align: left; margin-right: 10px;">指标名称:</label>
+                <input type="text" class="form-control custom-input" id="index_name" name="index_name" value="{% if index_etl_obj %}{{ index_etl_obj.index_name }}{% endif %}" style="margin-right: 30px;">
+
+                <label for="dep_info" class="col-form-label" style="width: 110px; text-align: left; margin-right: 10px;">前置依赖:</label>
+                 <input type="text" class="form-control custom-input" id="dep_info" name="dep_info" value="{% if index_etl_obj %}{{ index_etl_obj.dep_info }}{% endif %}"style="width: 35%;">
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="sql_info">SQL Info:</label>
+                <textarea class="form-control" id="sql_info" name="sql_info" rows="5" cols="50">{% if index_etl_obj %}{{ index_etl_obj.sql_info }}{% endif %}</textarea>
+            </div>
+           <div class="fixed-bottom bg-light p-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <a href="{% url 'filterapp:success' %}" class="btn btn-secondary " style="background-color: #75a6cc; padding: 10px 20px; font-size: 1.5rem; border-radius: 8px;">Cancel</a>
+                <button type="submit" class="btn btn-primary " style="background-color: #73c81d; color: white;padding: 10px 40px; font-size: 1.5rem; border-radius: 8px;">{% if index_etl_obj %}点击更新{% else %}点击保存{% endif %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+        </form>
+    </div>
+
+
+</body>
+{% endblock %}

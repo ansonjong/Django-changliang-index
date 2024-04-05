@@ -1,0 +1,33 @@
+{% extends "index.html" %}
+
+{% block title %}Success{% endblock %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Index ETL</title>
+</head>
+<body>
+    <h1>Edit Index ETL</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="new_sql_info">New SQL Info:</label><br>
+        <textarea id="new_sql_info" name="new_sql_info" rows="5" cols="50">{{ index_etl_obj.index_no }}</textarea><br><br>
+
+        <!-- Add other fields here -->
+        <label for="new_field1">New Field 1:</label><br>
+        <input type="text" id="new_field1" name="new_field1" value="{{ index_etl_obj.index_name }}"><br><br>
+
+        <label for="new_field2">New Field 2:</label><br>
+        <input type="text" id="new_field2" name="new_field2" value="{{ index_etl_obj.dep_info }}"><br><br>
+
+
+        <label for="new_field3">New Field 3:</label><br>
+        <input type="text" id="new_field3" name="new_field3" value="{{ index_etl_obj.sql_info }}"><br><br>
+        <!-- Add more fields as needed -->
+
+        <input type="submit" value="Update">
+    </form>
+</body>
+{% endblock %}
