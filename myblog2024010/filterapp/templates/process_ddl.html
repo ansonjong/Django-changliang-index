@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process MySQL DDL</title>
+</head>
+<body>
+    <h1>Enter MySQL DDL Statement</h1>
+    <form method="post">
+         <!-- 下拉框：来源系统 -->
+        <label for="source_system">业务来源系统:</label>
+        <select id="source_system" name="source_system">
+            <option value="nfms">资管</option>
+            <option value="ims">投资</option>
+            <option value="nfss">结算</option>
+            <!-- 添加更多选项，根据需要 -->
+        </select>
+
+        <!-- 单选框：增量或全量标识 -->
+        <p>
+            <label for="operation_incremental">ETL抽取方式：增量:</label>
+            <input type="radio" id="operation_incremental" name="operation" value="i">
+            <label for="operation_full">全量:</label>
+            <input type="radio" id="operation_full" name="operation" value="f" checked>
+        </p>
+
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

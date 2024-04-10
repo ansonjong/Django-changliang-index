@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面B</title>
+</head>
+<body>
+  <h1>页面B</h1>
+print({{ partition_info }})
+  <!-- 显示从页面A传递过来的部分数据 -->
+  <p>{{ data_to_display }}</p>
+
+  <!-- 关闭按钮 -->
+  <button onclick="goBack()">关闭</button>
+
+  <script>
+    // 返回上一页
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+</html>

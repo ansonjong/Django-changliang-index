@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MySQL DDL Converter</title>
+        <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+{#      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet">#}
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container-fluid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .converter {
+            flex-basis: 48%;
+            margin-bottom: 20px;
+        }
+
+        .table-info {
+            flex-basis: 48%;
+            overflow-y: auto; /* 当内容超过容器高度时显示滚动条 */
+            max-height: 600px; /* 设置最大高度 */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+        {##output_{{ field.name }} {#}
+        {#  width: auto;#}
+        {#  white-space: nowrap;#}
+        {#  overflow: hidden;#}
+        {#  text-overflow: ellipsis;#}
+        {#}#}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="converter">MySQL DDL Converter</h1>
+        <h1 class="table-info">Table Information</h1>
+
+    </div>
+
+    <div class="container-fluid">
+        <div class="converter">
+            <form method="post">
+                {% csrf_token %}
+
+                 <label for="source_system">系统来源：</label>
+       <select id="source_system" name="source_system">
+        <option value="option1" {% if source_system == "option1" %} selected {% endif %}>结算</option>
+        <option value="option2" {% if source_system == "option2" %} selected {% endif %}>资管</option>
+        <option value="option3" {% if source_system == "option3" %} selected {% endif %}>信贷</option>
+   {{ source_system }} </select><br><br>
+
+<input type="radio" id="etl_yes" name="etl_type" value="f" {% if etl_type == "f" %} checked {% endif %} style="vertical-align: top;">
+<label for="etl_yes" style="display: inline-block; height: 60px; vertical-align: top;">全量</label>
+<input type="radio" id="etl_no" name="etl_type" value="i" {% if etl_type != "f" %} checked {% endif %} style="vertical-align: top;">
+<label for="etl_no" style="display: inline-block; height: 60px; vertical-align: top;">增量</label> <br>
+
+    <label for="partition_info">Partition Info:</label><br>
+    <input type="text" id="partition_info" name="partition_info" value="{{ partition_info }}"><br><br>
+
+    <label for="table_location">Table Location:</label><br>
+    <input type="text" id="table_location" name="table_location" value="{{ table_location }}"><br><br>
+
+                <label for="mysql_sql">MySQL DDL:</label><br>
+                <textarea id="mysql_sql" name="mysql_sql" rows="20" cols="110">{{ mysql_sql }}</textarea><br>
+{# {% for field in table_info %}#}
+{#<td>#}
+{#    <input type="text" class="form-control" id="output_{{ field.name }}" readonly>#}
+{#</td>#}
+{#{% endfor %}#}
+
+
+                <input type="submit" value="Convert">
+            </form>
+        </div>
+        <div class="table-info">
+         <h2>Table Name: {{ table_name }}</h2>
+
+
+
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#myModal">
+                Toggle Table
+            </button>
+
+            <!-- 弹出悬浮框 -->
+            <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Table</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Header 1</th>
+                                <th>Header 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in col_map %}
+                            <tr>
+                                {% for cell in row %}
+                                <td>{{ cell }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                  </tbody>
+{#                        <tbody id="tableBody">#}
+{#                    <!-- 表格行将由 JavaScript 动态生成 -->#}
+{#                        </tbody>#}
+                    </table>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+<form id="tableInfoForm" method="post">
+
+
+{#    <label for="primaryKeyForm">Primary Key:</label><br>#}
+    <table>
+        <tr>
+            <th>字段名</th>
+            <th>字段类型</th>
+            <th>Hive字段类型</th>
+            <th>字段长度</th>
+            <th>字段注释</th>
+            <th>主键</th>
+        </tr>
+        {% for field in table_info %}
+        <tr>
+            <td>{{ field.name }}</td>
+            <td>{{ field.type }}</td>
+            <td>{{ field.hive_col }}</td>
+            <td>{{ field.length }}</td>
+            <td>{{ field.comment }}</td>
+            <td><input type="checkbox" name="primary_key[]" value="{{ field.name }}" {% if field.name in primary_keys %} checked {% endif %}></td>
+{#        <td>#}
+{#  <div class="form-check">#}
+{#    <input class="form-check-input" type="checkbox" name="primary_key[]" value="{{ field.name }}" id="checkbox_{{ field.name }}" {% if field.name in primary_keys %} checked {% endif %}>#}
+{#  </div>#}
+{#</td>#}
+        </tr>
+        {% endfor %}
+    </table><br>
+
+    <button type="submit">提交</button>
+print({{ partition_info }})
+</form>
+
+
+{#            <table border="1">#}
+{#                <thead>#}
+{#                    <tr>#}
+{#                        <th>Field Name</th>#}
+{#                        <th>Data Type</th>#}
+{#                        <th>DWS COL Type</th>#}
+{#                        <th>Length</th>#}
+{#                        <th>Comment</th>#}
+{#                        <th>主键标识</th>#}
+{#                    </tr>#}
+{#                </thead>#}
+{#                <tbody>#}
+{#                    {% for field in table_info %}#}
+{#                        <tr>#}
+{#                            <td>{{ field.name }}</td>#}
+{#                            {% if field.type %}#}
+{#                                <td>{{ field.type }}</td>#}
+{#                            {% else %}#}
+{#                                <td>N/A</td>#}
+{#                            {% endif %}#}
+{#                            <td>{{ field.hive_col  }}</td>#}
+{#                            <td>{{ field.length }}</td>#}
+{#                            <td >{{ field.comment }}</td>#}
+{#                            <td><input type="checkbox" name="primary_key[]" value="{{ field.name }}"></td>#}
+{#                        </tr>#}
+{#                    {% endfor %}#}
+{#                </tbody>#}
+{#            </table>#}
+
+
+        </div>
+    </div>
+
+{#<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"></script>#}
+<script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+<script src="{% static 'js/col_mapping.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      var fieldName = this.value;
+      var outputField = document.getElementById('output_' + fieldName);
+      if (this.checked) {
+        outputField.value = fieldName;
+      } else {
+        outputField.value = '';
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>

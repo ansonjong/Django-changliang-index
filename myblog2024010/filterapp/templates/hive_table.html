@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hive建表语句</title>
+<script>
+    // 更新选定列内容
+    function updateSelectedColumns() {
+        var selectedColumns = [];
+        var checkboxes = document.querySelectorAll('input[name="selected_columns"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            selectedColumns.push(checkbox.value);
+        });
+        // 更新第一个区域内容
+        var displayArea1 = document.getElementById('selected_columns_info_box');
+        displayArea1.innerHTML = 'WITH (orientation=row, compression=no distribute by hash(' + selectedColumns.join(', ') + ')';
+        // 更新第二个区域内容
+        var displayArea2 = document.getElementById('selected_columns_tab2');
+        displayArea2.innerHTML = 'WITH (orientation=row, compression=no distribute by hash(' + selectedColumns.join(', ') + ')';
+    }
+</script>
+ <script>
+        function generateDateList() {
+            // 获取起始日期和结束日期
+            var startDate = new Date(document.getElementById('start_date').value);
+            var endDate = new Date(document.getElementById('end_date').value);
+
+            // 确保起始日期在结束日期之前
+            if (startDate > endDate) {
+                alert('起始日期不能晚于结束日期！');
+                return;
+            }
+
+            // 生成日期列表
+            var dateList = [];
+            var currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                var isoDate = currentDate.toISOString().slice(0, 10); // 格式为 yyyy-mm-dd
+                var yyyymmddDate = new Date(currentDate);
+                yyyymmddDate.setDate(yyyymmddDate.getDate() - 1); // 减去一天
+                var yyyymmdd = yyyymmddDate.getFullYear().toString() + (yyyymmddDate.getMonth() + 1).toString().padStart(2, '0') + yyyymmddDate.getDate().toString().padStart(2, '0'); // 格式为 yyyymmdd
+                dateList.push({ 'iso': isoDate, 'yyyymmdd': yyyymmdd });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // 更新日期列表显示区域
+            {#var displayArea = document.getElementById('date_list');#}
+            {#displayArea.innerHTML = '<ul>';#}
+            {#dateList.forEach(function(date) {#}
+            {#    displayArea.innerHTML += '<li>' + date.iso + ' / ' + date.yyyymmdd + '</li>';#}
+            {#});#}
+            {#displayArea.innerHTML += '</ul>';#}
+           var displayArea = document.getElementById('date_list');
+            var htmlContent = '<ul>';
+
+            dateList.forEach(function(date, index) {
+                var partitionInfo = '';
+
+                    partitionInfo = 'partition by ' + date.yyyymmdd + ' less ' + date.iso + " '00000' time ";
+
+
+                if (index === dateList.length - 1) {
+                 htmlContent += '<li>' + partitionInfo + '</li>';
+              } else {
+                 htmlContent += '<li>' + partitionInfo + ',</li>';
+                 }
+            });
+
+            htmlContent += '</ul>';
+            displayArea.innerHTML = htmlContent;
+
+
+
+        }
+         window.onload = function() {
+            // 设置初始的开始日期为当年的第一天
+            var today = new Date();
+            var yearStart = new Date(today.getFullYear(), 0, 1);
+            var startInput = document.getElementById('start_date');
+            var formattedStartDate = yearStart.toISOString().slice(0, 10);
+            startInput.value = formattedStartDate;
+
+            // 设置初始的结束日期为当天日期
+            var endInput = document.getElementById('end_date');
+            endInput.value = today.toISOString().slice(0, 10);
+        };
+    </script>
+
+</head>
+
+ <style>
+        table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 4px; /* 调整单元格内边距 */
+    }
+ .tab {
+        display: none;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 700px;
+        height: 400px;
+        overflow-y: auto;
+        margin-bottom: 10px; /* 添加一个底部间距以区分每个tab */
+ }
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    /* 调整特定列的宽度 */
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 20%; /* 设置第一列的宽度 */
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 20%; /* 设置第二列的宽度 */
+    }
+        #date_list {
+        padding-left: 0; /* 去除默认的左侧内边距 */
+    }
+
+        #date_list li {
+            list-style-type: none; /* 去除列表项的默认符号 */
+        }
+      .custom-pre {
+        font-family: Arial, sans-serif; /* 设置字体家族 */
+        font-size: 16px; /* 设置字体大小 */
+        font-style: normal; /* 设置字体样式 */
+        /* 可以根据需要添加其他字体样式属性 */
+    }
+    </style>
+<body>
+
+<h2>日期范围和自动生成日期列表</h2>
+
+   <div style="display: inline-block;">
+    <label for="start_date">起始日期：</label>
+    <input type="date" id="start_date">
+</div>
+
+<div style="display: inline-block;">
+    <label for="end_date">结束日期：</label>
+    <input type="date" id="end_date">
+</div>
+
+    <button onclick="generateDateList()">生成日期列表</button>
+
+
+<h2>字段信息：</h2>
+   <div id="table_container" style="width: 1200px; height: 200px; overflow: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>字段名</th>
+                <th>类型</th>
+                <th>转换后字段</th>
+                <th>约束</th>
+                <th>主键</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for column in col_info %}
+            <tr>
+                <td>{{ column.column_name }}</td>
+                <td>{{ column.column_type }}</td>
+                <td>{{ column.hive_column_type }}</td>
+                <td>{{ column.column_length }}</td>
+                <td><input type="checkbox" name="selected_columns" value="{{ column.column_name }}" onchange="updateSelectedColumns()"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="tab-container">
+  <button class="tab-btn" onclick="openTab('info_box')">D层DDL语句</button>
+  <button class="tab-btn" onclick="openTab('tab2')">Tab 2</button>
+  <button class="tab-btn" onclick="openTab('tab3')">Tab 3</button>
+  <button class="tab-btn" onclick="openTab('tab3')">Tab 3</button>
+</div>
+<div id="info_box" class="tab"  style="display: block">
+
+    <pre class="custom-pre">{{ d_ddl }}</pre>
+         <p id="selected_columns_info_box">WITH (orientation=row,compression=no distribute by hash(选择分布键)</p>
+      <p>partition by range (etl_dt)(<br>
+    partition by 20090625 less 2009-06-26 '00000'time ,<br>
+    partition by 20200101 less 2020-01-02 '00000'time ,<br>
+        <div id="date_list"></div></p>
+        <p>）;</p>
+
+</div>
+  <button id="copy_button">复制内容</button>
+
+<div id="tab2" class="tab">
+   <pre class="custom-pre">{{ o_ddl }}</pre>
+    <p id="selected_columns_tab2">WITH (orientation=row,compression=no distribute by hash(选择分布键)</p>
+</div>
+
+<div id="tab3" class="tab"> 
+    <pre class="custom-pre">{{ d_dml }}</pre>
+
+</div>
+
+<div id="tab4" class="tab" >
+   <pre class="custom-pre">{{ o_ddl }}</pre>
+
+</div>
+
+<script>
+    document.getElementById('copy_button').addEventListener('click', function() {
+        // 获取info_box中的文本内容
+        var content = document.getElementById('info_box').innerText;
+
+        // 创建一个临时textarea元素，将内容复制到其中
+        var tempTextarea = document.createElement('textarea');
+        tempTextarea.value = content;
+        document.body.appendChild(tempTextarea);
+
+        // 选中textarea中的内容并执行复制命令
+        tempTextarea.select();
+        document.execCommand('copy');
+
+        // 移除临时textarea元素
+        document.body.removeChild(tempTextarea);
+
+        // 提示复制成功
+        alert('内容已复制到剪贴板！');
+    });
+</script>
+
+<script>
+function openTab(tabName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tab");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  document.getElementById(tabName).style.display = "block";
+}
+</script>
+</body>
+</html>

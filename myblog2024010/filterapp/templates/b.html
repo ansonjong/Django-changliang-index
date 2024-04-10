@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDL 解析与 Hive 建表</title>
+<style>
+  /* 样式可以根据需求进行自定义 */
+  #ddl-textarea {
+    width: 100%;
+    height: 200px;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>输入 MySQL DDL 语句：</h2>
+<textarea id="ddl-textarea" placeholder="请输入 MySQL DDL 语句"></textarea>
+<br>
+<button onclick="onSubmitButtonClick()">提交</button>
+
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="parsed-content">
+      <!-- 解析后的字段信息将显示在这里 -->
+    </div>
+    <button id="confirm-btn">确认</button>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+var modal = document.getElementById("myModal");
+
+function parseDDL() {
+    var ddl = document.getElementById("ddl-textarea").value;
+    // 这里使用您选择的方法来解析 DDL 语句，示例中假设使用了一个名为 parseDDLStatement 的函数
+    var parsedData = parseDDLStatement(ddl);
+
+    $('#parsed-content').empty();
+
+    parsedData.forEach(function(field) {
+        var checkbox = '<input type="checkbox" name="partition-columns" value="' + field.name + '">';
+
+        $('#parsed-content').append('<div>' + field.name + ' - ' + field.type + ' - ' + field.length + ' - ' + field.comment + checkbox + '</div>');
+    });
+}
+
+function onSubmitButtonClick() {
+    parseDDL();
+    modal.style.display = "block";
+}
+
+$('#confirm-btn').click(function() {
+    var partitionColumns = [];
+    $('input[name="partition-columns"]:checked').each(function() {
+        partitionColumns.push($(this).val());
+    });
+
+    var hiveDDL = generateHiveDDL(partitionColumns);
+    $('#hive-ddl').text(hiveDDL);
+
+    modal.style.display = "none";
+});
+
+var span = document.getElementsByClassName("close")[0];
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+// 这里需要编写解析 MySQL DDL 语句的函数 parseDDLStatement 和生成 Hive 建表语句的函数 generateHiveDDL
+// 由于这两个函数的具体实现方式取决于您的需求和环境，所以这里仅作为示例
+function parseDDLStatement(ddl) {
+    // 解析 MySQL DDL 语句的具体实现
+    // 返回一个数组，包含字段信息的对象
+}
+
+function generateHiveDDL(partitionColumns) {
+    // 生成 Hive 建表语句的具体实现，包含用户选择的分区列
+    // 返回生成的 Hive 建表语句
+}
+</script>
+
+<div>
+  <h2>生成的 Hive 建表语句：</h2>
+  <pre id="hive-ddl"></pre>
+</div>
+
+</body>
+</html>

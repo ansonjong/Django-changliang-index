@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}我的一堆表{% endblock %}</title>
+    <!-- 引入 Bootstrap CSS 文件 -->
+{#    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">#}
+
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <style>
+            /* 自定义样式 */
+            .nav {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                text-align: center; /* 文本居中显示 */
+                background-color: #262626; /* 导航栏背景色 */
+                height: 60px; /* 导航栏高度 */
+                line-height: 60px; /* 垂直居中 */
+                font-size: 28px; /* 导航链接字体大小 */
+            }
+             .nav-item {
+                display: inline-block; /* 导航项水平排列 */
+                margin-right: 200px; /* 导航项之间的右边距 */
+            }
+            .nav-link {
+                color: #999; /* 导航链接颜色 */
+                text-decoration: none; /* 去掉下划线 */
+            }
+            .nav-link:hover {
+                color: #fff; /* 鼠标悬停时的导航链接颜色 */
+            }
+            .footer {
+                margin-top: 50px;
+                text-align: center;
+            }
+        </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <ul class="navbar-nav nav mx-auto">
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'filterapp:success' %}">指标库信息</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="{% url 'filterapp:display_table_info' %}">数据开发平台</a>
+            </li>
+
+
+            <!-- 如果您有其他导航链接，可以继续添加在这里 -->
+        </ul>
+
+    </div>
+</nav>
+
+{#<div class="container mt-3">#}
+{#    <div class="float-right">#}
+{#        <a href="{% url 'filterapp:add_info' %}" class="btn btn-primary">我的表</a>#}
+{#    </div>#}
+{#    <div class="clearfix"></div>#}
+{#</div>#}
+
+<div class="container-fluid mt-3" style="margin: 5px";>
+    {% block content %}
+{#        {% include 'success.html' %}#}
+    {% endblock %}
+</div>
+
+<footer class="footer">
+    <hr class="my-4">
+    <p>优雅的下划线</p>
+</footer>
+
+<!-- 引入 Bootstrap JavaScript 文件 -->
+<script src="{% static 'js/bootstrap.bundle.js' %}"></script>
+
+</body>
+</html>
